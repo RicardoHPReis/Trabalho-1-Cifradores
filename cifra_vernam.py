@@ -1,10 +1,7 @@
-import string as s
 import time as t
 import random as r
+import unidecode as u
 import os
-
-ALFABETO:list = s.ascii_uppercase + s.digits
-palavra_chave = ""
 
 def titulo() -> None:
     print("--------------------")
@@ -12,7 +9,7 @@ def titulo() -> None:
     print("--------------------\n")
 
 
-def ler_arquivo_texto(escolha:int):
+def ler_arquivo_texto(escolha:int) -> str:
     texto = ""
     
     if escolha == 1:
@@ -29,15 +26,37 @@ def ler_arquivo_texto(escolha:int):
 
 
 def gerar_arquivo_texto(texto:str, escolha:int) -> None:
-    if escolha == 1:
-        print("Mensagem: ", texto)
-    else:
+    if escolha == 2:
         nome_arquivo = input("Escolha o nome do arquivo para salvar a mensagem: ")
         if nome_arquivo.find(".txt") == -1:
             nome_arquivo = nome_arquivo + ".txt"
         
         with open(nome_arquivo, "w") as arquivo:
             arquivo.write(texto)
+            
+            
+def tratar_texto(texto:str) -> tuple:
+    texto_unidecode = u.unidecode(texto)
+    
+    texto_alfa_num = list([val for val in texto_unidecode if val.isalpha() or val.isnumeric()])
+    texto_alfa_num = "".join(texto_alfa_num)
+            
+    return texto_unidecode, texto_alfa_num
+
+            
+def opcao_arquivo_input() -> int:
+    os.system('cls' if os.name == 'nt' else 'clear')
+    titulo()
+    print('1) Input.')
+    print('2) Arquivo.')
+    
+    escolha = int(input("Escolha uma opção: "))
+    if escolha != 1 and escolha != 2:
+        print('A escolha precisa estar nas opções acima!')
+        t.sleep(2)
+        opcao_arquivo_input()
+    
+    return escolha
 
 
 def xor(x: str, y: str) -> str:
@@ -59,90 +78,72 @@ def gerar_chaves_aleatorias(texto: str) -> str:
     return chave
 
 
-def texto_para_binario(texto: str) -> str:
+def criptografar(texto:str) -> tuple:
     binario = [format(ord(i), 'b') for i in texto]
     print("Texto em binário: {}\n".format(formatar_lista(binario)))
     
-    return binario
-
-
-def gerar_chave_criptografica(texto: str) -> str:
-    chave = gerar_chaves_aleatorias(texto)
-    chave = formatar_lista(chave)
-    print("Chave gerada: {}\n".format(chave))
+    chave = gerar_chaves_aleatorias(binario)
+    print("Chave gerada: {}\n".format(formatar_lista(chave)))
     
-    return chave
-
-
-def one_time_pad(msg: str, pad: list) -> str:
-    cifra = [xor(msg[i], pad[i]) for i in range(len(msg))]
-    cifra = formatar_lista(cifra)
-    print("Cifra gerada: {}\n".format(cifra))
-    return cifra
-
-
-def criptografar(texto: list) -> tuple:
-    msg = texto_para_binario(texto)
-    pad = gerar_chave_criptografica(msg)
-    cifra = one_time_pad(msg, pad)
-
-    return cifra, pad
+    cifra = [xor(binario[i], chave[i]) for i in range(len(binario))]
+    print("Cifra gerada: {}\n".format(formatar_lista(cifra)))
+    
+    return cifra, chave
 
 
 def descriptografar(cifra: list, pad: list) -> list:
     mensagem_original = [xor(cifra[i], pad[i]) for i in range(len(cifra))]
 
-    print("Mensagem original em binário: {}\n".format(''.join(str(i) for i in mensagem_original)))
+    print("Mensagem original em binário: {}\n".format(formatar_lista(mensagem_original)))
 
     msg = [chr(int(item, 2)) for _, item in enumerate(mensagem_original)]
-    msg = formatar_lista(msg)
+    print(formatar_lista(msg))
 
-    return msg
-
-
-def opcao_arquivo_input() -> int:
-    os.system('cls' if os.name == 'nt' else 'clear')
-    titulo()
-    print('1) Input.')
-    print('2) Arquivo.')
-    
-    escolha = int(input("Escolha uma opção: "))
-    if escolha != 1 and escolha != 2:
-        print('A escolha precisa estar nas opções acima!')
-        t.sleep(2)
-        opcao_arquivo_input()
-    
-    return escolha
+    return mensagem_original
 
 
-def cifra_vernam():
-    os.system('cls' if os.name == 'nt' else 'clear')
-    titulo()
-    print('1) Cifrar.')
-    print('2) Decifrar.')
-    
+def cifra_vernam2():
+    texto = input('Entre com o texto a ser cifrado (ou aperte enter para texto padrão):')
+
+    if texto == '':
+        texto = "O rato roeu a roupa do rei de roma"
+        
+    cifra, pad = criptografar(texto, pad)
+    descriptografar(cifra, pad)
+
+
+def cifra_vernam():        
     escolha = 0
-    texto = ""
+    opcao = 0
     cifra = []
-    pad = ""
-    opcao = int(input("Escolha uma opção: "))
-    match opcao:
-        case 1:
-            escolha = opcao_arquivo_input()
-            texto = ler_arquivo_texto(escolha)
-            cifra, pad = criptografar(texto)
-            gerar_arquivo_texto(cifra, escolha)
-            texto_descriptografado = descriptografar(cifra, pad)
-            gerar_arquivo_texto(texto_descriptografado, escolha)
-        case 2:
-            escolha = opcao_arquivo_input()
-            cifra = ler_arquivo_texto(escolha)
-            texto_descriptografado = descriptografar(cifra, pad)
-            gerar_arquivo_texto(texto_descriptografado, escolha)
-        case _:
-            print('A escolha precisa estar nas opções acima!')
-            t.sleep(2)
-            cifra_vernam()
+    chave = ""
+    
+    while opcao != 3:
+        os.system('cls' if os.name == 'nt' else 'clear')
+        titulo()
+        print('1) Cifrar.')
+        print('2) Decifrar.')
+        print('3) Sair.')
+        opcao = int(input("Escolha uma opção: "))
+        match opcao:
+            case 1:
+                escolha = opcao_arquivo_input()
+                texto = ler_arquivo_texto(escolha)
+                texto_unidecode, texto_alfa_num = tratar_texto(texto)
+                cifra, chave = criptografar(texto_unidecode)
+                gerar_arquivo_texto(formatar_lista(cifra), escolha)
+                input("Digite algo para continuar... ")
+            case 2:
+                escolha = opcao_arquivo_input()
+                texto = list(ler_arquivo_texto(escolha))
+                texto_descriptografado = descriptografar(cifra, chave)
+                gerar_arquivo_texto(texto_descriptografado, escolha)
+                input("Digite algo para continuar... ")
+            case 3:
+                break
+            case _:
+                print('A escolha precisa estar nas opções acima!')
+                t.sleep(2)
 
 
 def main():
