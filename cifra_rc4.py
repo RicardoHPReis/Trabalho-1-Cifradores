@@ -75,7 +75,6 @@ def key_scheduling(chave:str) -> list:
     
 
 def stream_generation(sched:list):
-    stream = []
     i = 0
     j = 0
     while True:

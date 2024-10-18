@@ -5,7 +5,7 @@ import unidecode as u
 import os
 
 ALFABETO:list = s.ascii_uppercase + s.ascii_lowercase + s.digits
-
+ALCANCE:int = 2
 FREQUENCIA:dict = {
     'A': 14.63,
     'B': 1.04,
@@ -48,9 +48,9 @@ def analise_frequencia(texto_alfa_num:str) -> int:
     dicionario_letras = dict(sorted(dicionario_letras.items(), key=lambda x:x[1], reverse=True))
     
     media = 0
-    alcance = range(0,2)
+    alcance = range(0,ALCANCE)
     for i in alcance:
-        ordem_msg = ALFABETO.index(list(dicionario_letras)[i])
+        ordem_msg = ALFABETO.index(list(dicionario_letras)[i].upper())
         ordem_resp = ALFABETO.index(list(FREQUENCIA_ORDENADA)[i])
         media += (len(ALFABETO) + ordem_msg - ordem_resp) % len(ALFABETO)
     possivel_chave = int(media/len(alcance))
